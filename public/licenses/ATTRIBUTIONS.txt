@@ -1,0 +1,42 @@
+Hafezi Quran third-party content
+
+Quran page text and 610-page layout:
+DigitalKhatt contributors, sponsored by Tarteel.
+https://github.com/DigitalKhatt/digitalkhatt-js
+MIT License. See DigitalKhatt-MIT.txt.
+Original displayed line strings are retained without changes.
+
+Quran font:
+Copyright 2024-2025 Amine Anane and Tarteel Inc.
+https://github.com/DigitalKhatt/indopakfont
+SIL Open Font License 1.1. See DigitalKhatt-font-OFL.txt.
+The web font is compressed to WOFF2 without changing glyphs, shaping tables or metrics.
+
+Surah metadata and translation snapshots:
+Quran JSON by Risan Bagja and contributors.
+https://github.com/risan/quran-json
+Repository: Creative Commons Attribution ShareAlike 4.0.
+The underlying Quran text, font and translation rights remain with their sources.
+Navigation metadata is reorganized into local JSON and the verse map is derived
+from the DigitalKhatt source. Metadata derivatives retain CC BY-SA 4.0 attribution.
+
+Bengali translation of the meanings:
+Abu Bakr Zakaria, QuranEnc.com, version 1.1.1.
+https://quranenc.com/en/browse/bengali_zakaria/
+Published with QuranEnc's stated republication permission and conditions:
+https://quranenc.com/en/home/api/
+Original translation text and footnotes retained. Please report corrections to
+QuranEnc and check for new versions before releasing updated snapshots.
+
+English translation:
+Marmaduke Pickthall, The Meaning of the Glorious Koran (1930).
+Public domain, served through Quran JSON. Translation text unchanged.
+
+Surah and Juz reference metadata:
+Al Quran Cloud, Islamic Network, https://alquran.cloud/api
+Bengali Surah names: QuranEnc.com.
+
+Recitation audio:
+EveryAyah.com public verse recordings by Mishary Rashid Alafasy and
+Abdul Basit Abdul Samad. Streamed directly from https://everyayah.com/.
+Recordings are not bundled, redistributed, or offered for download by this app.
