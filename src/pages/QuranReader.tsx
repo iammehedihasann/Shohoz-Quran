@@ -35,6 +35,8 @@ import {
   translationSourceUrl,
 } from "../services/translationService";
 import BengaliTranslationSelector from "../components/quran/BengaliTranslationSelector";
+import ArabicFontSidebar from "../components/quran/ArabicFontSidebar";
+import { QURAN_FONT_PROBE, requireArabicFont } from "../constants/arabicFonts";
 import { requireBengaliTranslation } from "../constants/translations";
 import type { QuranPage, Translation, Verse } from "../types";
 import { MushafPage } from "../components/quran/MushafPage";
@@ -59,6 +61,7 @@ export default function QuranReader({
     setPreferences,
   } = useApp();
   const prefs = state.preferences;
+  const arabicFont = requireArabicFont(prefs.arabicFont);
   const number = Number(params.number);
   const pageNumber = Number(
     kind === "surah"
@@ -89,6 +92,7 @@ export default function QuranReader({
     );
   const [font, setFont] = useState<"loading" | "ready" | "error">("ready"),
     [displaySettings, setDisplaySettings] = useState(false),
+    [displayFontSettings, setDisplayFontSettings] = useState(false),
     [full, setFull] = useState(false),
     [pageInput, setPageInput] = useState(String(pageNumber ?? 1));
   const [translations, setTranslations] = useState<Record<string, Translation>>(
@@ -99,6 +103,7 @@ export default function QuranReader({
     [verses, setVerses] = useState<Verse[]>([]);
   const reader = useRef<HTMLDivElement>(null),
     touch = useRef<{ x: number; y: number } | null>(null);
+  const failedFont = useRef<string | null>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(660);
   const pageScale =
@@ -151,22 +156,50 @@ export default function QuranReader({
   }, [pageNumber, retry, initialKey, valid]);
   useEffect(() => {
     let active = true;
-    document.fonts
-      .load('32px "Indopak"')
+    let timeout: ReturnType<typeof setTimeout>;
+    setFont("loading");
+    const fontSpec = `32px "${arabicFont.family}"`;
+    // Browsers retain a failed CSS FontFace. A fresh face permits a real retry.
+    const loading = failedFont.current === arabicFont.id
+      ? new FontFace(arabicFont.family, `url("${arabicFont.file}") format("woff2")`).load().then(face => {
+          if (active) document.fonts.add(face);
+          return [face];
+        })
+      : document.fonts.load(fontSpec, QURAN_FONT_PROBE);
+    Promise.race([
+      loading,
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(
+          () => reject(new Error("Font loading timed out.")),
+          15000,
+        );
+      }),
+    ])
       .then((fonts) => {
         if (active) {
-          setFont(fonts.length ? "ready" : "error");
-          if (fonts.length)
+          const loaded =
+            fonts.length > 0 &&
+            document.fonts.check(fontSpec, QURAN_FONT_PROBE);
+          failedFont.current = loaded ? null : arabicFont.id;
+          setFont(loaded ? "ready" : "error");
+          if (loaded)
             document.documentElement.classList.add("quran-font-ready");
         }
       })
       .catch(() => {
-        if (active) setFont("error");
+        if (active) {
+          failedFont.current = arabicFont.id;
+          setFont("error");
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeout);
       });
     return () => {
       active = false;
+      clearTimeout(timeout);
     };
-  }, [retry]);
+  }, [arabicFont, retry]);
   useEffect(() => {
     if (page && ready && page.keys.includes(selected))
       saveProgress(page.number, selected, Number(selected.split(":")[0]));
@@ -533,7 +566,19 @@ export default function QuranReader({
           <Link className="reader-all-settings" to="/settings">
             All settings
           </Link>
+          <button
+            type="button"
+            className="button secondary"
+            aria-haspopup="dialog"
+            aria-expanded={displayFontSettings}
+            onClick={() => setDisplayFontSettings(true)}
+          >
+            Arabic Font
+          </button>
         </div>
+      )}
+      {displayFontSettings && (
+        <ArabicFontSidebar onClose={() => setDisplayFontSettings(false)} />
       )}
       {error ? (
         <ErrorState message={error} retry={() => setRetry((v) => v + 1)} />
@@ -554,19 +599,31 @@ export default function QuranReader({
             <div
               ref={viewport}
               className="page-viewport"
+              style={{
+                touchAction:
+                  prefs.mode === "page" && prefs.zoom <= 100
+                    ? "pan-y pinch-zoom"
+                    : undefined,
+              }}
               onTouchStart={(e) => {
                 touch.current =
+                  prefs.mode === "page" &&
+                  prefs.zoom <= 100 &&
                   e.touches.length === 1
                     ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
                     : null;
               }}
               onTouchEnd={(e) => {
-                if (!touch.current || prefs.zoom > 100) return;
-                const dx = e.changedTouches[0].clientX - touch.current.x,
-                  dy = e.changedTouches[0].clientY - touch.current.y;
+                const start = touch.current;
                 touch.current = null;
-                if (Math.abs(dx) > 90 && Math.abs(dy) < 50)
-                  go(pageNumber + (dx > 0 ? 1 : -1));
+                if (!start || prefs.mode !== "page" || prefs.zoom > 100) return;
+                const dx = e.changedTouches[0].clientX - start.x,
+                  dy = e.changedTouches[0].clientY - start.y;
+                if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy) * 1.5)
+                  go(pageNumber + (dx < 0 ? 1 : -1));
+              }}
+              onTouchCancel={() => {
+                touch.current = null;
               }}
             >
               {prefs.mode === "page" ? (
@@ -579,6 +636,8 @@ export default function QuranReader({
                 >
                   <div
                     style={{
+                      position: "relative",
+                      width: 660,
                       transform: `scale(${pageScale})`,
                       transformOrigin: "top left",
                     }}
@@ -587,6 +646,24 @@ export default function QuranReader({
                       page={page}
                       selected={selected}
                       onSelect={chooseVerse}
+                    />
+                    <button
+                      type="button"
+                      className="mushaf-page-turn"
+                      style={{ left: 0 }}
+                      aria-label="Next Mushaf page"
+                      title="Next page"
+                      disabled={pageNumber >= PAGE_COUNT}
+                      onClick={() => go(pageNumber + 1)}
+                    />
+                    <button
+                      type="button"
+                      className="mushaf-page-turn"
+                      style={{ right: 0 }}
+                      aria-label="Previous Mushaf page"
+                      title="Previous page"
+                      disabled={pageNumber <= 1}
+                      onClick={() => go(pageNumber - 1)}
                     />
                   </div>
                 </div>
@@ -634,7 +711,10 @@ export default function QuranReader({
                           lang="ar"
                           dir="rtl"
                           className="continuous-arabic"
-                          style={{ fontSize: prefs.fontSize }}
+                          style={{
+                            fontSize: prefs.fontSize,
+                            fontFamily: `"${arabicFont.family}", serif`,
+                          }}
                         >
                           {v.text}
                         </p>

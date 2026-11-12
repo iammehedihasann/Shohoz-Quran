@@ -24,7 +24,7 @@ export function Logo() {
         <BookOpen size={25} strokeWidth={1.6} />
       </span>
       <span>
-        Hafezi<span className="brand-sub">QURAN · القرآن الكريم</span>
+        QURAN<span className="brand-sub">· القرآن الكريم</span>
       </span>
     </Link>
   );
@@ -229,8 +229,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </main>
         <footer className="footer">
           <span>
-            Hafezi Quran <span className="footer-dot">·</span> Read with
-            presence.
+            Quran <span className="footer-dot">·</span> Read with presence.
           </span>
           <div>
             <Link to="/about">{t.privacy}</Link>

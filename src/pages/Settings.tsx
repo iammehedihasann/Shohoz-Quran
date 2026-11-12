@@ -11,6 +11,7 @@ import { useApp } from "../contexts/AppContext";
 import { useTranslation } from "../constants/i18n";
 import { Seo } from "../components/common/Seo";
 import BengaliTranslationSelector from "../components/quran/BengaliTranslationSelector";
+import ArabicFontSelector from "../components/quran/ArabicFontSelector";
 export default function Settings() {
   const { state, setPreferences } = useApp(),
     t = useTranslation(),
@@ -144,6 +145,9 @@ export default function Settings() {
         </section>
         <section className="settings-panel">
           <h2>Reading preferences</h2>
+          <div className="setting-row">
+            <ArabicFontSelector id="setting-arabic-font" />
+          </div>
           <div className="setting-row">
             <label htmlFor="setting-mode">
               <strong>Reading mode</strong>

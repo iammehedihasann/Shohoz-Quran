@@ -1,5 +1,6 @@
 import type { SavedState, Preferences } from "../types";
 import { pageFor } from "../constants/quran";
+import { DEFAULT_ARABIC_FONT, isAvailableArabicFont } from "../constants/arabicFonts";
 import {
   DEFAULT_BENGALI_TRANSLATION,
   isAvailableBengaliTranslation,
@@ -9,6 +10,7 @@ export const defaultPreferences: Preferences = {
   language: "en",
   translation: "none",
   bengaliTranslation: DEFAULT_BENGALI_TRANSLATION,
+  arabicFont: DEFAULT_ARABIC_FONT,
   fontSize: 32,
   zoom: 100,
   audio: true,
@@ -28,6 +30,7 @@ export function readState(): SavedState {
     if (!raw || raw.version !== 1) return defaultState;
     const p = raw.preferences ?? {};
     const preferences: Preferences = { ...defaultPreferences };
+    if (isAvailableArabicFont(p.arabicFont)) preferences.arabicFont = p.arabicFont;
     if (["light", "dark"].includes(p.theme)) preferences.theme = p.theme;
     if (["en", "bn", "ar"].includes(p.language))
       preferences.language = p.language;

@@ -54,3 +54,16 @@
  .reader-settings .button{justify-self:end;min-width:100px}
  .reader-settings .reader-all-settings{grid-column:1/-1;justify-self:end;margin:0;padding:2px 0;font-size:10px}
 }
+.mushaf-page-turn{position:absolute;top:0;bottom:0;width:44px;padding:0;background:transparent}
+.arabic-font-selector{width:100%;min-width:0;font-size:12px;line-height:1.8}
+.arabic-font-selector>label{display:block;font-weight:600;margin-bottom:8px}
+.arabic-font-selector select{display:block;width:100%;max-width:100%;min-height:44px;border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:10px;color:var(--ink);font-size:12px}
+.arabic-font-selector p{margin-top:12px;max-width:none;font-size:11px}
+.arabic-font-availability{color:var(--muted)}
+.arabic-font-sidebar{position:fixed;inset:0 0 0 auto;margin:0;width:min(360px,100%);height:100dvh;max-height:100dvh;max-width:100%;padding:24px 20px max(24px,env(safe-area-inset-bottom));border:0;border-left:1px solid var(--border);background:var(--surface);color:var(--ink);overflow-y:auto;box-shadow:var(--shadow)}
+.arabic-font-sidebar::backdrop{background:#112b2355}
+.arabic-font-sidebar header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:25px}
+.arabic-font-sidebar h2{font-family:Georgia,serif;font-size:24px;font-weight:400}
+/* Keep the bottom navigation reachable on shorter screens. */
+.sidebar{overflow-y:auto}
+.sidebar>nav,.sidebar-bottom{flex-shrink:0}

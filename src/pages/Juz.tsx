@@ -37,10 +37,6 @@ export default function Juz() {
           </Link>
         ))}
       </div>
-      <p className="data-note">
-        Arabic labels show the opening words from the source. Juz boundaries: Al
-        Quran Cloud metadata, mapped to this edition’s own page numbers.
-      </p>
     </>
   );
 }

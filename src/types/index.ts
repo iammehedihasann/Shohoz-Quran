@@ -33,11 +33,13 @@ export type BengaliTranslationId =
   | "bn.bengali"
   | "bn-islamic-foundation"
   | "bn-taqi-usmani-bashar";
+export type ArabicFontId = "indopak" | "kolkata";
 export interface Preferences {
   theme: "light" | "dark";
   language: "en" | "bn" | "ar";
   translation: "none" | "en" | "bn" | "both";
   bengaliTranslation: BengaliTranslationId;
+  arabicFont: ArabicFontId;
   fontSize: number;
   zoom: number;
   audio: boolean;
