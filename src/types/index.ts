@@ -29,10 +29,12 @@ export interface Translation {
   surah: number;
   verses: { id: number; translation: string; footnotes?: string }[];
 }
+export type BengaliTranslationId = "bn-zakaria" | "bn-islamic-foundation" | "bn-taqi-usmani-bashar";
 export interface Preferences {
   theme: "light" | "dark";
   language: "en" | "bn" | "ar";
   translation: "none" | "en" | "bn" | "both";
+  bengaliTranslation: BengaliTranslationId;
   fontSize: number;
   zoom: number;
   audio: boolean;

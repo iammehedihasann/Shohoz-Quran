@@ -10,6 +10,7 @@ import {
 import { useApp } from "../contexts/AppContext";
 import { useTranslation } from "../constants/i18n";
 import { Seo } from "../components/common/Seo";
+import BengaliTranslationSelector from "../components/quran/BengaliTranslationSelector";
 export default function Settings() {
   const { state, setPreferences } = useApp(),
     t = useTranslation(),
@@ -135,10 +136,11 @@ export default function Settings() {
             >
               <option value="none">{t.none}</option>
               <option value="en">English · Pickthall</option>
-              <option value="bn">বাংলা · Abu Bakr Zakaria</option>
+              <option value="bn">বাংলা</option>
               <option value="both">{t.both}</option>
             </select>
           </div>
+          <BengaliTranslationSelector id="setting-bengali-edition" />
         </section>
         <section className="settings-panel">
           <h2>Reading preferences</h2>

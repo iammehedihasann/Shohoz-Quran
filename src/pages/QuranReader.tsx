@@ -28,12 +28,13 @@ import {
 import { useApp } from "../contexts/AppContext";
 import { useTranslation } from "../constants/i18n";
 import { pageFor, surahs, juz, surahAt, PAGE_COUNT } from "../constants/quran";
+import { getPage, getVerses, prefetchPage } from "../services/quranService";
 import {
-  getPage,
   getTranslation,
-  getVerses,
-  prefetchPage,
-} from "../services/quranService";
+  translationCacheKey,
+  translationSourceUrl,
+} from "../services/translationService";
+import BengaliTranslationSelector from "../components/quran/BengaliTranslationSelector";
 import type { QuranPage, Translation, Verse } from "../types";
 import { MushafPage } from "../components/quran/MushafPage";
 import { Loading, ErrorState } from "../components/common/States";
@@ -98,7 +99,8 @@ export default function QuranReader({
     touch = useRef<{ x: number; y: number } | null>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(660);
-  const pageScale = Math.min(1, Math.max(260, viewportWidth - 16) / 660) * prefs.zoom / 100;
+  const pageScale =
+    (Math.min(1, Math.max(260, viewportWidth - 16) / 660) * prefs.zoom) / 100;
   useEffect(() => {
     const el = viewport.current;
     if (!el) return;
@@ -173,7 +175,8 @@ export default function QuranReader({
         p = pageFor(cs, ca);
       if (!p) return;
       setSelected(key);
-      if (p !== pageNumber && !page?.keys.includes(key)) navigate(`/read/${p}?ayah=${key}`);
+      if (p !== pageNumber && !page?.keys.includes(key))
+        navigate(`/read/${p}?ayah=${key}`);
     },
     [pageNumber, navigate, page],
   );
@@ -228,12 +231,19 @@ export default function QuranReader({
     if (!page || prefs.translation === "none") return;
     let active = true;
     setTranslationError("");
+    setTranslations({});
     const langs: prefsLanguage[] =
       prefs.translation === "both" ? ["en", "bn"] : [prefs.translation];
     Promise.all(
       langs.flatMap((lang) =>
         page.surahs.map((id) =>
-          getTranslation(lang, id).then((v) => [`${lang}/${id}`, v] as const),
+          getTranslation(lang, id, prefs.bengaliTranslation).then(
+            (v) =>
+              [
+                translationCacheKey(lang, id, prefs.bengaliTranslation),
+                v,
+              ] as const,
+          ),
         ),
       ),
     )
@@ -246,7 +256,7 @@ export default function QuranReader({
     return () => {
       active = false;
     };
-  }, [page, prefs.translation, retry]);
+  }, [page, prefs.translation, prefs.bengaliTranslation, retry]);
   type prefsLanguage = "en" | "bn";
   if (!valid)
     return (
@@ -266,7 +276,10 @@ export default function QuranReader({
             (l) => prefs.translation === l || prefs.translation === "both",
           )
           .map((l) => {
-            const data = translations[`${l}/${cs}`],
+            const data =
+                translations[
+                  translationCacheKey(l, cs, prefs.bengaliTranslation)
+                ],
               v = data?.verses.find((v) => v.id === ca);
             return (
               <div key={l} className="translation-copy" lang={l}>
@@ -289,7 +302,12 @@ export default function QuranReader({
                       {v.footnotes.replace(/<[^>]*>/g, "")}
                     </p>
                     <a
-                      href={`https://quranenc.com/en/browse/bengali_zakaria/${cs}/${ca}`}
+                      href={translationSourceUrl(
+                        l,
+                        cs,
+                        ca,
+                        prefs.bengaliTranslation,
+                      )}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -305,7 +323,7 @@ export default function QuranReader({
     );
   };
   return (
-    <div ref={reader} className={`reader-view ${full?'immersive':''}`}>
+    <div ref={reader} className={`reader-view ${full ? "immersive" : ""}`}>
       <Seo
         canonicalPath={`/read/${pageNumber}`}
         title={`${title ?? "Quran reader"} — ${s.transliteration}`}
@@ -347,8 +365,13 @@ export default function QuranReader({
             className="icon-button fullscreen-button"
             aria-label={full ? "Exit full screen" : "Enter full screen"}
             onClick={() => {
-              if (full) { if (document.fullscreenElement) void document.exitFullscreen(); else setFull(false); }
-              else if (reader.current?.requestFullscreen) void reader.current.requestFullscreen().catch(() => setFull(true));
+              if (full) {
+                if (document.fullscreenElement) void document.exitFullscreen();
+                else setFull(false);
+              } else if (reader.current?.requestFullscreen)
+                void reader.current
+                  .requestFullscreen()
+                  .catch(() => setFull(true));
               else setFull(true);
             }}
           >
@@ -422,9 +445,15 @@ export default function QuranReader({
             Verse by verse
           </button>
         </div>
+        {prefs.audio && (
+          <Suspense fallback={<Loading />}>
+            <AudioPlayer verseKey={selected} onVerse={chooseVerse} />
+          </Suspense>
+        )}
       </div>
+
       {displaySettings && (
-        <div className="reader-settings">
+        <div className="reader-settings" role="region" aria-label="Reading settings">
           <label>
             {t.translation}
             <select
@@ -437,11 +466,12 @@ export default function QuranReader({
             >
               <option value="none">{t.none}</option>
               <option value="en">English · Pickthall</option>
-              <option value="bn">বাংলা · Abu Bakr Zakaria</option>
+              <option value="bn">বাংলা</option>
               <option value="both">{t.both}</option>
             </select>
           </label>
-          <label>
+          {(prefs.translation === "bn" || prefs.translation === "both") && <BengaliTranslationSelector id="reader-bengali-edition" compact />}
+          <label className="reader-ayah-control">
             Ayah
             <select
               aria-label="Select ayah"
@@ -457,7 +487,7 @@ export default function QuranReader({
               ))}
             </select>
           </label>
-          <div className="zoom-control">
+          <div className="zoom-control" role="group" aria-label="Page zoom">
             <button
               className="icon-button"
               aria-label="Zoom out"
@@ -487,7 +517,7 @@ export default function QuranReader({
             <Headphones size={16} />
             {prefs.audio ? "Hide" : "Show"} audio
           </button>
-          <Link to="/settings">All settings</Link>
+          <Link className="reader-all-settings" to="/settings">All settings</Link>
         </div>
       )}
       {error ? (
@@ -619,7 +649,27 @@ export default function QuranReader({
               Use ← for the next page and → for the previous page. Tap an ayah
               to select it.
             </p>
-            <div className="selected-ayah-actions"><span>Selected ayah <strong>{selected}</strong></span><button className="button secondary" onClick={() => toggleBookmark(pageNumber, selected)}><Bookmark size={15} fill={state.bookmarks.some(b=>b.key===selected)?'currentColor':'none'}/>{state.bookmarks.some(b=>b.key===selected)?'Remove ayah bookmark':'Bookmark ayah'}</button></div>
+            <div className="selected-ayah-actions">
+              <span>
+                Selected ayah <strong>{selected}</strong>
+              </span>
+              <button
+                className="button secondary"
+                onClick={() => toggleBookmark(pageNumber, selected)}
+              >
+                <Bookmark
+                  size={15}
+                  fill={
+                    state.bookmarks.some((b) => b.key === selected)
+                      ? "currentColor"
+                      : "none"
+                  }
+                />
+                {state.bookmarks.some((b) => b.key === selected)
+                  ? "Remove ayah bookmark"
+                  : "Bookmark ayah"}
+              </button>
+            </div>
           </div>
           {prefs.translation !== "none" && prefs.mode === "page" && (
             <aside className="translation-panel">
@@ -663,12 +713,8 @@ export default function QuranReader({
           )}
         </div>
       )}
-      {prefs.audio && (
-        <Suspense fallback={<Loading />}>
-          <AudioPlayer verseKey={selected} onVerse={chooseVerse} />
-        </Suspense>
-      )}
-      <div className="reader-source-note">
+
+      {/* <div className="reader-source-note">
         <Link to="/about">Edition & source information</Link>
         <span>
           Original 15-line boundaries are preserved. Zoom or pan to read
@@ -680,7 +726,7 @@ export default function QuranReader({
             audio references use standard Hafs numbering.
           </span>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

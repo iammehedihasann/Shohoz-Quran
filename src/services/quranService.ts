@@ -1,6 +1,5 @@
-import type { QuranPage, Translation, Verse } from "../types";
-const pages = new Map<number, Promise<QuranPage>>(),
-  translations = new Map<string, Promise<Translation>>();
+import type { QuranPage, Verse } from "../types";
+const pages = new Map<number, Promise<QuranPage>>();
 async function json<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok)
@@ -24,18 +23,6 @@ export function getPage(page: number) {
 }
 export function prefetchPage(page: number) {
   if (page >= 1 && page <= 610) void getPage(page).catch(() => {});
-}
-export function getTranslation(language: "en" | "bn", surah: number) {
-  const key = `${language}/${surah}`;
-  if (!translations.has(key))
-    translations.set(
-      key,
-      json<Translation>(`/data/translations/${key}.json`).catch((e) => {
-        translations.delete(key);
-        throw e;
-      }),
-    );
-  return translations.get(key)!;
 }
 const verses = new Map<number, Promise<Verse[]>>();
 export function getVerses(page: number) {

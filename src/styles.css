@@ -12,8 +12,8 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* Justify the source words while keeping each source line indivisible. */
-.mushaf-line-inner{display:block;min-width:100%;width:max-content;text-align:justify;text-align-last:justify;white-space:nowrap}
-.mushaf-line span{white-space:normal;padding:0}
+.mushaf-line-inner{display:block;flex-shrink:0;min-width:100%;width:max-content;text-align:justify;text-align-last:justify;white-space:nowrap}
+.mushaf-line span{white-space:nowrap;padding:0}
 .mushaf-line.centered .mushaf-line-inner{text-align:center;text-align-last:center;min-width:0}
 .mushaf-lines,.continuous-arabic,.search-arabic,.juz-name{visibility:hidden}
 .quran-font-ready .mushaf-lines,.quran-font-ready .continuous-arabic,.quran-font-ready .search-arabic,.quran-font-ready .juz-name{visibility:visible}
@@ -34,3 +34,23 @@
 .search-box input::placeholder{color:var(--muted)}
 .skip-link:not(:focus-visible){top:-100px}
 @media(max-width:700px){.reader-actions .icon-button{min-width:40px;min-height:42px}.topbar-actions>.icon-button{min-width:38px;min-height:38px}}
+
+/* Keep reader controls compact; edition availability details live in Settings. */
+.reader-settings{align-items:flex-end;gap:12px;padding:12px 16px;margin-bottom:18px}
+.reader-settings>label{flex:0 1 160px;gap:6px}
+.reader-settings .reader-edition-control{flex-basis:190px}
+.reader-settings .reader-ayah-control{flex-basis:80px}
+.reader-settings select{width:100%;max-width:100%;min-height:38px;padding:8px 22px 8px 10px}
+.reader-settings .zoom-control{min-height:38px;gap:2px}
+.reader-settings .zoom-control .icon-button{min-width:34px;min-height:36px}
+.reader-settings .button{min-height:38px;padding:9px 12px;font-size:10px}
+.reader-settings .reader-all-settings{margin-inline-start:auto;padding-bottom:11px;white-space:nowrap}
+@media(max-width:700px){
+ .reader-settings{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:12px}
+ .reader-settings>label{min-width:0}
+ .reader-settings>label:first-child{grid-column:1;grid-row:1}
+ .reader-settings .reader-ayah-control{grid-column:2;grid-row:1}
+ .reader-settings .reader-edition-control{grid-column:1/-1;grid-row:2}
+ .reader-settings .button{justify-self:end;min-width:100px}
+ .reader-settings .reader-all-settings{grid-column:1/-1;justify-self:end;margin:0;padding:2px 0;font-size:10px}
+}

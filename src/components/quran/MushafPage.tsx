@@ -15,13 +15,15 @@ const Line = memo(function Line({
   useLayoutEffect(() => {
     let active = true;
     const measure = () => { if (active && el.current && inner.current) {
+      // Measure the unwrapped source line after the compatible font is ready.
+      // Shrinking only horizontally preserves every source page and line.
       const width = el.current.clientWidth * line.width;
-      const textWidth = inner.current.scrollWidth;
+      const textWidth = Math.max(inner.current.scrollWidth, inner.current.offsetWidth);
       inner.current.style.transform =
         textWidth > width ? `scaleX(${width / textWidth})` : "";
     }};
     measure();
-    void document.fonts.ready.then(measure);
+    void document.fonts.load('30px "Indopak"').then(() => document.fonts.ready).then(measure).catch(() => {});
     return () => { active = false; };
   }, [line]);
   if (line.type === "surah")

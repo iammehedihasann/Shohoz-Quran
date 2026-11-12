@@ -72,7 +72,9 @@ export default function Home() {
   const [tab, setTab] = useState<"surahs" | "juz">("surahs"),
     [q, setQ] = useState("");
   const last = state.progress,
-    s = (last ? surahs[Number(last.key.split(':')[0])-1] : undefined) ?? surahAt(last?.page ?? 1);
+    s =
+      (last ? surahs[Number(last.key.split(":")[0]) - 1] : undefined) ??
+      surahAt(last?.page ?? 1);
   const popular = [1, 18, 36, 55, 67, 112];
   return (
     <>
@@ -204,7 +206,7 @@ export default function Home() {
               className={tab === "juz" ? "selected" : ""}
               onClick={() => setTab("juz")}
             >
-              By Para / Juz <span>30</span>
+              By Para <span>30</span>
             </button>
           </div>
           <form
@@ -280,16 +282,6 @@ export default function Home() {
           Read & listen <ArrowRight size={16} />
         </Link>
       </section>
-      <div className="edition-note">
-        <ShieldCheck size={16} />
-        <span>
-          DigitalKhatt Indo-Pak edition · 610 pages · Original page and line
-          boundaries
-        </span>
-        <Link to="/about">
-          Meet our sources <ArrowUpRight size={13} />
-        </Link>
-      </div>
     </>
   );
 }

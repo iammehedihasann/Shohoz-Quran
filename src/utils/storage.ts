@@ -1,6 +1,7 @@
 import type {SavedState,Preferences} from '../types';
 import {pageFor} from '../constants/quran';
-export const defaultPreferences:Preferences={theme:'light',language:'en',translation:'none',fontSize:32,zoom:100,audio:true,mode:'page'};
+import {DEFAULT_BENGALI_TRANSLATION,isAvailableBengaliTranslation} from '../constants/translations';
+export const defaultPreferences:Preferences={theme:'light',language:'en',translation:'none',bengaliTranslation:DEFAULT_BENGALI_TRANSLATION,fontSize:32,zoom:100,audio:true,mode:'page'};
 export const defaultState:SavedState={version:1,preferences:defaultPreferences,bookmarks:[],progress:null,recent:[]};
 export const STORAGE_KEY='hafezi-quran-v1';
 export function readState():SavedState {
@@ -10,6 +11,7 @@ export function readState():SavedState {
   if(['light','dark'].includes(p.theme))preferences.theme=p.theme;
   if(['en','bn','ar'].includes(p.language))preferences.language=p.language;
   if(['none','en','bn','both'].includes(p.translation))preferences.translation=p.translation;
+  if(isAvailableBengaliTranslation(p.bengaliTranslation))preferences.bengaliTranslation=p.bengaliTranslation;
   if(['page','continuous'].includes(p.mode))preferences.mode=p.mode;
   if(Number.isFinite(p.fontSize))preferences.fontSize=Math.min(56,Math.max(24,p.fontSize));
   if(Number.isFinite(p.zoom))preferences.zoom=Math.min(200,Math.max(75,p.zoom));
