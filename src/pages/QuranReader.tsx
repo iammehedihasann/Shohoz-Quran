@@ -35,6 +35,7 @@ import {
   translationSourceUrl,
 } from "../services/translationService";
 import BengaliTranslationSelector from "../components/quran/BengaliTranslationSelector";
+import { requireBengaliTranslation } from "../constants/translations";
 import type { QuranPage, Translation, Verse } from "../types";
 import { MushafPage } from "../components/quran/MushafPage";
 import { Loading, ErrorState } from "../components/common/States";
@@ -94,6 +95,7 @@ export default function QuranReader({
       {},
     ),
     [translationError, setTranslationError] = useState(""),
+    [verseError, setVerseError] = useState(""),
     [verses, setVerses] = useState<Verse[]>([]);
   const reader = useRef<HTMLDivElement>(null),
     touch = useRef<{ x: number; y: number } | null>(null);
@@ -216,22 +218,24 @@ export default function QuranReader({
     if (prefs.mode !== "continuous" || !valid) return;
     let active = true;
     setVerses([]);
+    setVerseError("");
     getVerses(pageNumber)
       .then((v) => {
         if (active) setVerses(v);
       })
       .catch((e) => {
-        if (active) setTranslationError(e.message);
+        if (active) setVerseError(e.message);
       });
     return () => {
       active = false;
     };
   }, [prefs.mode, pageNumber, valid, retry]);
   useEffect(() => {
-    if (!page || prefs.translation === "none") return;
-    let active = true;
     setTranslationError("");
     setTranslations({});
+    if (!page || page.number !== pageNumber || prefs.translation === "none")
+      return;
+    let active = true;
     const langs: prefsLanguage[] =
       prefs.translation === "both" ? ["en", "bn"] : [prefs.translation];
     Promise.all(
@@ -256,7 +260,7 @@ export default function QuranReader({
     return () => {
       active = false;
     };
-  }, [page, prefs.translation, prefs.bengaliTranslation, retry]);
+  }, [page, pageNumber, prefs.translation, prefs.bengaliTranslation, retry]);
   type prefsLanguage = "en" | "bn";
   if (!valid)
     return (
@@ -286,14 +290,17 @@ export default function QuranReader({
                 <span className="translation-edition">
                   {data?.edition ??
                     (l === "bn"
-                      ? "Bengali translation"
+                      ? requireBengaliTranslation(prefs.bengaliTranslation)
+                          .label
                       : "English translation")}
                 </span>
                 <p>
                   {v?.translation ??
-                    (data
-                      ? "Translation unavailable for this ayah."
-                      : "Loading translation…")}
+                    (translationError
+                      ? "Translation could not load. Please try again."
+                      : data
+                        ? "Translation unavailable for this ayah."
+                        : "Loading translation…")}
                 </p>
                 {v?.footnotes && (
                   <details>
@@ -341,11 +348,17 @@ export default function QuranReader({
             </span>
           </h1>
           <p>
-            DigitalKhatt Indo-Pak · Page {pageNumber} of 610 · Para{" "}
-            {page?.juz ?? "…"}
+            Page {pageNumber} of 610 · Para {page?.juz ?? "…"}
           </p>
         </div>
         <div className="reader-actions">
+          <button
+            className={`button secondary ${prefs.audio ? "selected" : ""}`}
+            onClick={() => setPreferences({ audio: !prefs.audio })}
+          >
+            <Headphones size={16} />
+            {prefs.audio ? "Hide" : "Show"} audio
+          </button>
           <button
             className={`icon-button ${bookmarked ? "selected" : ""}`}
             aria-label={bookmarked ? "Remove page bookmark" : "Bookmark page"}
@@ -453,7 +466,11 @@ export default function QuranReader({
       </div>
 
       {displaySettings && (
-        <div className="reader-settings" role="region" aria-label="Reading settings">
+        <div
+          className="reader-settings"
+          role="region"
+          aria-label="Reading settings"
+        >
           <label>
             {t.translation}
             <select
@@ -470,7 +487,9 @@ export default function QuranReader({
               <option value="both">{t.both}</option>
             </select>
           </label>
-          {(prefs.translation === "bn" || prefs.translation === "both") && <BengaliTranslationSelector id="reader-bengali-edition" compact />}
+          {(prefs.translation === "bn" || prefs.translation === "both") && (
+            <BengaliTranslationSelector id="reader-bengali-edition" compact />
+          )}
           <label className="reader-ayah-control">
             Ayah
             <select
@@ -510,14 +529,10 @@ export default function QuranReader({
               <ZoomIn size={18} />
             </button>
           </div>
-          <button
-            className={`button secondary ${prefs.audio ? "selected" : ""}`}
-            onClick={() => setPreferences({ audio: !prefs.audio })}
-          >
-            <Headphones size={16} />
-            {prefs.audio ? "Hide" : "Show"} audio
-          </button>
-          <Link className="reader-all-settings" to="/settings">All settings</Link>
+
+          <Link className="reader-all-settings" to="/settings">
+            All settings
+          </Link>
         </div>
       )}
       {error ? (
@@ -577,9 +592,15 @@ export default function QuranReader({
                 </div>
               ) : (
                 <div className="continuous-verses">
-                  {translationError ? (
+                  {translationError && prefs.translation !== "none" && (
                     <ErrorState
                       message={translationError}
+                      retry={() => setRetry((v) => v + 1)}
+                    />
+                  )}
+                  {verseError ? (
+                    <ErrorState
+                      message={verseError}
                       retry={() => setRetry((v) => v + 1)}
                     />
                   ) : verseList.length === 0 ? (

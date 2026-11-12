@@ -21,12 +21,14 @@ Navigation metadata is reorganized into local JSON and the verse map is derived
 from the DigitalKhatt source. Metadata derivatives retain CC BY-SA 4.0 attribution.
 
 Bengali translation of the meanings:
-Abu Bakr Zakaria, QuranEnc.com, version 1.1.1.
-https://quranenc.com/en/browse/bengali_zakaria/
-Published with QuranEnc's stated republication permission and conditions:
-https://quranenc.com/en/home/api/
-Original translation text and footnotes retained. Please report corrections to
-QuranEnc and check for new versions before releasing updated snapshots.
+মাওলানা মুহিউদ্দীন খান (Muhiuddin Khan).
+Al Quran Cloud / Islamic Network, edition bn.bengali.
+https://api.alquran.cloud/v1/quran/bn.bengali
+https://alquran.cloud/terms-and-conditions
+Translator attribution is retained by name as requested in the source terms.
+Original API text is preserved without rewriting or generated additions.
+Reader Surahs load from the API; local snapshots support search and validation.
+Snapshot verified on 12 November 2026.
 
 English translation:
 Marmaduke Pickthall, The Meaning of the Glorious Koran (1930).

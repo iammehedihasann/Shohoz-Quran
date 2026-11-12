@@ -1,31 +1,31 @@
-# Bengali translation editions
+# Bengali translation
 
-Checked 12 November 2026. No Quran translation text was generated, rewritten, OCR-transcribed, or replaced in this change.
+Verified 12 November 2026. The default Bengali translation is **মাওলানা মুহিউদ্দীন খান** (Maulana Muhiuddin Khan), Al Quran Cloud edition `bn.bengali`.
 
-## Available edition
+## Source and attribution
 
-Dr. Abu Bakr Muhammad Zakaria, QuranEnc version 1.1.1, remains the existing static Bengali dataset. The original files in `public/data/translations/bn/` and their footnotes are unchanged. QuranEnc's [edition page](https://quranenc.com/en/browse/bengali_zakaria/) and [documented Surah endpoint](https://quranenc.com/api/v1/translation/sura/bengali_zakaria/1) identify the existing edition. The endpoint returned the expected numbered Bengali translation and footnotes during verification. Use remains subject to the existing [QuranEnc republication conditions](https://quranenc.com/en/home/api/).
+The live [Surah 1 endpoint](https://api.alquran.cloud/v1/surah/1/bn.bengali), [Surah 2 endpoint](https://api.alquran.cloud/v1/surah/2/bn.bengali), and [complete Quran endpoint](https://api.alquran.cloud/v1/quran/bn.bengali) were checked. Edition metadata identifies `identifier: bn.bengali`, `language: bn`, `englishName: Muhiuddin Khan`, `name: মুহিউদ্দীন খান`, `format: text`, and `type: translation`. The API permits cross-origin requests (`Access-Control-Allow-Origin: *`), so no backend or credentials are required. The site's Content Security Policy permits connections to this API origin.
 
-## Islamic Foundation Bangladesh
+Al Quran Cloud's [terms, section IV](https://alquran.cloud/terms-and-conditions) ask republications to attribute the translator by name and retain the edition identifier. The reader and selectors display the Bengali name; the catalog, API URLs and source notices retain `bn.bengali`. Text is displayed exactly as supplied. No translation is generated, rewritten, normalized, or supplemented with invented footnotes. See also the [API documentation](https://alquran.cloud/api) and `public/licenses/ATTRIBUTIONS.txt`.
 
-The official Ministry of Religious Affairs site provides [Quranic e-book downloads](https://quran.gov.bd/home/ebook_download.html), including an [Arabic–Bangla PDF](https://quran.gov.bd/quran/pdf/ab/fab.pdf). Its [user manual](https://quran.gov.bd/common/user_Manual/UserManual.pdf) describes those downloads and its online reader. The site carries a Ministry copyright notice.
+## Reader and mapping
 
-This verifies an official PDF download, not permission to republish the translation in this application. An authenticated, machine-readable verse dataset for the specific Islamic Foundation board translation, an official public JSON/API contract for that edition, and redistribution permission were not verified. The government digital edition must not automatically be assumed identical to the requested printed board translation. Third-party scans and GitHub source-code licenses do not establish those rights.
+`src/services/translationService.ts` fetches `https://api.alquran.cloud/v1/surah/{surah}/bn.bengali` for each Surah represented on the current Hafezi page. It validates the response envelope, edition identity, Surah number, expected verse count, contiguous `numberInSurah` values and global ayah numbers against existing Hafs metadata. API page numbers are never used: this application retains its own 610-page layout.
 
-The supplementary [Al Quran Cloud Bengali catalog](https://api.alquran.cloud/v1/edition/language/bn) returned `bn.bengali` (Muhiuddin Khan) and `bn.hoque` (Zohurul Hoque). Neither is labeled as the requested Islamic Foundation board edition. They are not substituted or relabeled.
+Each API `text` maps unchanged to a translation with the corresponding Surah and local ayah ID. The existing reader looks up translations by Surah and ayah, so mixed-Surah pages and ayahs crossing page boundaries retain correct references. Concurrent requests share an in-memory promise keyed by edition and Surah. Failed requests leave the cache and can be retried; requests time out after 15 seconds. Effect cleanup prevents late responses from replacing translations after navigation or disabling translations. Loading and retry states use the existing UI. Arabic remains visible if Bengali loading fails in either reading mode.
 
-## Mufti Muhammad Taqi Usmani — Bengali Tawzeehul Quran
+The reader requires a connection for the first request for a Surah in each session. Successfully fetched Surahs remain available in memory during that session. There is no silent fallback to a different translator. English translation loading and unrelated reading features retain their existing behavior.
 
-The [Maktabatul Ashraf catalog](https://maktabatulashraf.com/%E0%A6%87%E0%A6%B8%E0%A6%B2%E0%A6%BE%E0%A6%AE%E0%A7%80-%E0%A6%AC%E0%A6%87) lists *Tafsire Tawzihul Quran (1–3 Vol)* by Mufti Muhammad Taqi Usmani. The [Bengali edition listing](https://www.rokomari.com/book/104109/tafsire-taojihul-quran/) identifies translator Maulana Abul Bashar Muhammad Saiful Islam, publisher Maktabatul Ashraf, Bengali language, and ISBN 9847025000193. This identifies the requested Bengali edition; Usmani's Urdu and English works are different resources.
+## Preferences and existing installations
 
-The publisher's [e-book category](https://maktabatulashraf.com/index.php?route=product/category&path=172) showed no products, and its site carried an all-rights-reserved notice. No publisher-authorized Bengali API, JSON corpus, downloadable verse text, or digital redistribution grant was verified. Online availability of a book or scan alone does not supply that permission.
+The Bengali edition preference is separate from the `none`, `en`, `bn`, and `both` display modes. Missing, unsupported and previous edition IDs migrate to `bn.bengali`; the migrated ID is persisted when LocalStorage permits writes. Bookmarks, progress and unrelated preferences are retained. Existing unavailable Islamic Foundation and Bengali Tawzeehul Quran entries stay unavailable; their text is never substituted or relabeled.
 
-## Implementation and activation requirements
+On service-worker activation, only cached Bengali translation files and the search index are removed, so an old Bengali search snapshot cannot survive the update. Downloaded Arabic pages, fonts and English translations remain cached.
 
-`src/constants/translations.ts` separates bibliographic identity from runtime availability. Requested but unverified editions have no data directory, API endpoint, or fabricated text. Both selectors show them disabled and explain the limitations. Only available editions can be selected or loaded. The service rejects unavailable IDs before fetching anything.
+## Search snapshots and refresh
 
-The new `bengaliTranslation` preference is separate from display mode (`none`, `en`, `bn`, `both`) and uses the existing versioned LocalStorage record. Old records receive the existing Zakaria default; unsupported or unavailable IDs are discarded. Bookmarks, progress and all unrelated preferences are preserved. Loaded text always carries its actual edition attribution.
+`public/data/translations/bn/1.json` through `114.json` contain unmodified text from the complete API response. These snapshots support the existing local Bengali search index, data preparation and exhaustive mapping checks; the reader always fetches Bengali Surahs from the API.
 
-To activate another edition, first obtain permission covering static redistribution and offline caching from the relevant rights holder and an authenticated Bengali verse corpus for that exact edition. Retain its permission notice, version, source attribution, full text and notes. Validate all 114 Surahs and 6,236 Hafs references, then add the verified local dataset and mark its catalog entry available. The runtime validates Surah, edition attribution, ayah ordering and completeness, and caches by edition ID plus Surah. Existing author text must never be relabeled as another edition.
+Run `node scripts/update-bengali-translation.mjs` to fetch and validate all 114 Surahs and 6,236 ayahs before updating only Bengali snapshots and the `bn` field of `public/data/search.json`. An optional path to a previously saved full API response supports reproducible offline refreshes. Arabic text, English text, search references and page metadata are retained. `scripts/prepare-data.mjs` reuses current Bengali snapshots instead of importing an obsolete source edition.
 
-No third-party translation API is called by the application at runtime. Search continues to use the existing Zakaria snapshot; no unavailable edition is claimed to be searchable. Arabic text, source page/line data, fonts, navigation, audio and bookmarks are outside this change.
+`npm test` checks the API contract, exact translation text, caching, malformed responses, retry, preference migration and every translation reference on all 610 pages. Browser tests cover settings, multi-Surah navigation, late responses, failed API requests, recovery and both reading modes on desktop and mobile. `npm run build` includes TypeScript checking.

@@ -36,7 +36,8 @@ export default function About() {
           <ShieldCheck size={24} />
           <h2>Translations & Audio</h2>
           <p>
-            The app includes Bengali translation by Abu Bakr Zakaria and English
+            The app includes Bengali translation by মাওলানা মুহিউদ্দীন খান
+            (Muhiuddin Khan), provided by Al Quran Cloud, and English
             translation by Marmaduke Pickthall.
           </p>
           <p>
@@ -66,8 +67,9 @@ export default function About() {
         <section>
           <h2>Offline Reading</h2>
           <p>
-            Previously downloaded Quran pages can be read offline. Translations
-            are also available offline when cached.
+            Previously downloaded Quran pages can be read offline. English
+            translations are available offline when cached. Bengali translations
+            require an internet connection to load each Surah.
           </p>
           <p>Audio recitation requires an internet connection.</p>
         </section>

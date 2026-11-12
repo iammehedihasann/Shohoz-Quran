@@ -8,7 +8,7 @@ fs.writeFileSync('.source-data/indopak.mjs',source.replace('let quranText =','ex
 const {quranText:raw}=await import('../.source-data/indopak.mjs');
 const chapters=read('.source-data/chapters.json'),bnNames=read('.source-data/surah-bn.json');
 const meta=read('.source-data/meta.json').data;
-const bn=read('.source-data/bn.json'),en=read('.source-data/en.json');
+const bn=chapters.map(c=>({id:c.id,...read(`public/data/translations/bn/${c.id}.json`)})),en=read('.source-data/en.json');
 const verses={},pages=[];let surah=0,ayah=1;
 const widths=new Map([[255*15+4,.9],[312*15+4,.6],[331*15+12,.7],[349*15+15,.9],[396*15+8,.7],[417*15+15,.8],[440*15+7,.5],[452*15+11,.8],[495*15+11,.8],[498*15+7,.7],[510*15+15,.6],[523*15+8,.8],[528*15+11,.7],[531*15+7,.7],[548*15+15,.5],[554*15+9,.7],[569*15+10,.8],[573*15+12,.3],[576*15+2,.5],[577*15+15,.5],[580*15+5,.7],[581*15+15,.5],[584*15+2,.3],[590*15+10,.8],[591*15+11,.5],[592*15+8,.7],[594*15+2,.8],[595*15+3,.6],[596*15+4,.7],[596*15+15,.6],[598*15+9,.8],[599*15+15,.5],[602*15+2,.5],[602*15+15,.5],[605*15+10,.5],[606*15+2,.5],[606*15+9,.8],[606*15+15,.7],[609*15+11,.7],[609*15+15,.7],[610*15+5,.5],[610*15+10,.7]]);
 const digits=s=>Number([...s].map(c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).join(''));
@@ -45,7 +45,7 @@ const surahs=chapters.map(c=>({...c,bengali:bnNames[c.id],page:verses[`${c.id}:1
 const juz=meta.juzs.references.map((j,i)=>({number:i+1,...j,page:verses[`${j.surah}:${j.ayah}`].page,name:verses[`${j.surah}:${j.ayah}`].text.replace(/۝.*/u,'').trim().split(' ').slice(0,3).join(' ')}));
 for(const p of pages){const first=verses[p.keys[0]];p.juz=juz.filter(j=>j.surah<first.surah||(j.surah===first.surah&&j.ayah<=first.ayah)).at(-1)?.number??1;write(`public/data/pages/${p.number}.json`,p);write(`public/data/verses/${p.number}.json`,p.keys.map(k=>verses[k]));}
 write('src/constants/metadata.json',{edition:'DigitalKhatt Indo-Pak 15-line',pages:610,surahs,juz,versePages:Object.fromEntries(Object.entries(verses).map(([k,v])=>[k,v.page]))});
-for(const [lang,edition,data]of [['en','Marmaduke Pickthall (1930)',en],['bn','Abu Bakr Zakaria · QuranEnc 1.1.1',bn]]){
+for(const [lang,edition,data]of [['en','Marmaduke Pickthall (1930)',en],['bn','মাওলানা মুহিউদ্দীন খান',bn]]){
  for(const c of data){assert.equal(c.verses.length,surahs[c.id-1].total_verses);write(`public/data/translations/${lang}/${c.id}.json`,{edition,surah:c.id,verses:c.verses});}
 }
 const search=Object.values(verses).map(v=>({...v,en:en[v.surah-1].verses[v.ayah-1].translation,bn:bn[v.surah-1].verses[v.ayah-1].translation}));

@@ -1,6 +1,6 @@
 # Hafezi Quran
 
-A frontend-only Quran reader built with React, Vite, TypeScript, Tailwind CSS, React Router, and Lucide. All Quran and translation data is served from static files. No application server, credentials, accounts, or database.
+A frontend-only Quran reader built with React, Vite, TypeScript, Tailwind CSS, React Router, and Lucide. Arabic Quran and English translation data is served from static files. Bengali reader translations are fetched per Surah from Al Quran Cloud (`bn.bengali`). No application server, credentials, accounts, or database.
 
 ## Run
 
@@ -26,7 +26,7 @@ Serve `dist/` with a static host that supports directory indexes. Every public r
 - Text and 610-page layout: [DigitalKhatt](https://github.com/DigitalKhatt/digitalkhatt-js), MIT.
 - Compatible Indo-Pak font: [DigitalKhatt](https://github.com/DigitalKhatt/indopakfont), SIL OFL 1.1; all source glyphs retained.
 - English: Marmaduke Pickthall (1930), public domain, through [Quran JSON](https://github.com/risan/quran-json).
-- Bengali: Abu Bakr Zakaria, QuranEnc version 1.1.1, through Quran JSON. Original translations and footnotes are retained. Follow [QuranEnc conditions](https://quranenc.com/en/home/api/), keep the edition current, and pass corrections to the publisher.
+- Bengali: **মাওলানা মুহিউদ্দীন খান** (Muhiuddin Khan), Al Quran Cloud edition `bn.bengali`. Original API text is retained without rewriting. [API documentation](https://alquran.cloud/api) · [Terms and translator attribution](https://alquran.cloud/terms-and-conditions). The reader fetches each required Surah dynamically; the Bengali search snapshot contains the same edition.
 - Metadata: Quran JSON, Al Quran Cloud; Bengali Surah names from QuranEnc. Juz page numbers are mapped from actual ayah references into this edition.
 - Audio: EveryAyah public verse recordings, streamed from the source; no recordings are redistributed.
 
@@ -39,8 +39,8 @@ Source provenance is recorded in `public/data/provenance.json`; licenses ship in
 ## Performance and SEO
 
 - Route-level code splitting; audio controls load separately.
-- Individually fetched static Quran pages and translation Surahs; adjacent page prefetch.
-- Search runs in a Web Worker, loading its 4.6 MB uncompressed index only after keyword search. The main UI remains responsive. Serve JSON using Brotli or gzip compression.
+- Individually fetched static Quran pages and English translations; Bengali translations fetched by Surah from Al Quran Cloud with validation, request deduplication and retry; adjacent Quran page prefetch.
+- Search runs in a Web Worker, loading its static index only after keyword search. The main UI remains responsive. Serve JSON using Brotli or gzip compression.
 - Verse-by-verse data is fetched per page, including complete ayahs crossing page boundaries.
 - Search-engine-readable HTML is generated at build time for 761 public and utility routes. Reader content is present before JavaScript executes.
 - Accurate titles, descriptions, language metadata, Open Graph tags, and robots directives. Personal and query pages use `noindex`.
@@ -50,7 +50,7 @@ Source provenance is recorded in `public/data/provenance.json`; licenses ship in
 
 ## Offline behavior
 
-After first load, a service worker caches the app shell. Opened Quran pages, fonts, translations and verse data cache on demand. Settings includes a deliberate download of all 610 Mushaf pages and the font. Translations, audio, and pages not cached are not claimed to work offline; audio remains online-only. Search is offline-capable only after its index is cached. Cache storage can be evicted by the browser. HTTPS or localhost is required. Close existing tabs after rebuilding to activate the next worker.
+After first load, a service worker caches the app shell. Opened Quran pages, fonts, English translations and verse data cache on demand. Bengali reader Surahs require an internet connection on first request in each session and are reused in memory afterward. Settings includes a deliberate download of all 610 Mushaf pages and the font. Bengali translations, audio, and pages not cached are not claimed to work offline; audio remains online-only. Search is offline-capable only after its index is cached. Cache storage can be evicted by the browser. HTTPS or localhost is required. Close existing tabs after rebuilding to activate the next worker.
 
 Bookmarks, recent Surahs, preferences and progress use versioned, validated LocalStorage. Missing, invalid or inaccessible browser storage is handled without crashing. Clearing site storage removes these records. No analytics or account syncing is present.
 
@@ -64,6 +64,6 @@ Tests use installed Google Chrome via Playwright, across desktop and mobile view
 
 ## Structure
 
-`src/components` contains the shell, Mushaf renderer, audio player and shared states. `src/pages` holds route screens. `src/services` fetches static resources and hosts the search worker. `src/contexts` manages local state. `scripts` prepares data, pre-renders SEO pages, and creates the service worker. `public/data` holds page-level Quran data and Surah-level translations.
+`src/components` contains the shell, Mushaf renderer, audio player and shared states. `src/pages` holds route screens. `src/services` fetches static resources and Bengali API translations, and hosts the search worker. `src/contexts` manages local state. `scripts` prepares data, pre-renders SEO pages, and creates the service worker. `public/data` holds page-level Quran data and Surah-level translation snapshots. Run `node scripts/update-bengali-translation.mjs` to refresh only Bengali snapshots and Bengali search text from the complete `bn.bengali` API response; see `docs/bengali-translations.md`.
 
 The assigned Sites origin is configured in `.env.production`. Replace `VITE_SITE_URL` with your own public domain when changing hosts, then rebuild. Pin and review source updates before deploying.
